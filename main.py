@@ -63,8 +63,8 @@ else:
 # from model.FLAVR_arch import UNet_3D_3D
 # from model.
 # from model.FLAVR_arch_w_inception import UNetWithInception  # Import UNetWithInception
-# from model.FLAVR_arch_v2_w_inception import UNetWithInception  # Import UNetWithInception
-from model.FLAVR_arch_w_inception_conv_one import UNetWithInception  # Import UNetWithInception
+from model.FLAVR_arch_v2_w_inception import UNetWithInception  # Import UNetWithInception
+# from model.FLAVR_arch_w_inception_conv_one import UNetWithInception  # Import UNetWithInception
 from model.FLAVR_arch_v2 import UNet_3D_3D
 print("Building model: %s"%args.model.lower())
 model = UNetWithInception(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType, upmode=args.upmode)
