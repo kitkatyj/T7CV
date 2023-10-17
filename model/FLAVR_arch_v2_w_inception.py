@@ -6,6 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from .resnet_3D import SEGating
+from .inception import InceptionModule
 
 def joinTensors(X1 , X2 , type="concat"):
 
