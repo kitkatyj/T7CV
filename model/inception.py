@@ -5,6 +5,25 @@ import importlib
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from .resnet_3D import SEGating
+
+class Conv_3d(nn.Module):
+
+    def __init__(self, in_ch, out_ch, kernel_size, stride=1, padding=0, bias=True, batchnorm=False):
+
+        super().__init__()
+        self.conv = [nn.Conv3d(in_ch, out_ch, kernel_size=kernel_size, stride=stride, padding=padding, bias=bias),
+                    SEGating(out_ch)
+                    ]
+
+        if batchnorm:
+            self.conv += [nn.BatchNorm3d(out_ch)]
+
+        self.conv = nn.Sequential(*self.conv)
+
+    def forward(self, x):
+
+        return self.conv(x)
 
 class InceptionModule(nn.Module):
     def __init__(self, in_channels, out_channels, batchnorm=False):
