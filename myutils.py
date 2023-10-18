@@ -54,7 +54,7 @@ def calc_psnr(pred, gt):
     return -10 * math.log10(diff)
 
 
-def save_checkpoint(state, directory, is_best, exp_name, filename='checkpoint.pth'):
+def save_checkpoint(state, directory, is_best, exp_name, filename='latest_checkpoint.pth'):
     """Saves checkpoint to disk"""
     if not os.path.exists(directory):
         os.makedirs(directory)
