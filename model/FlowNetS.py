@@ -118,8 +118,8 @@ class FlowNetS_Interpolation(nn.Module):
         return [interpolated_frame]
 
     def warp(self, x, flow):
-        _, _, h, w = flow.size()
-        grid_x, grid_y = torch.meshgrid(torch.arange(0, w), torch.arange(0, h))
+        _, _, w, h = flow.size()
+        grid_x, grid_y = torch.meshgrid(torch.arange(0, w), torch.arange(0, h)) # (448, 256)
         grid_x = grid_x.float().to(x.device)
         grid_y = grid_y.float().to(x.device)
 
