@@ -70,6 +70,16 @@ print("Building model: %s"%args.model.lower())
 model = UNetWithInception(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType, upmode=args.upmode)
 model = torch.nn.DataParallel(model).to(device)
 
+## RNN IMPLEMENTATION ##
+from model.RNN import *
+# model = SimpleRNN(input_size=args.nbr_frame, hidden_size=8, output_size=args.n_outputs, num_layers=20)
+# model = MultiLayerRNN(input_size=args.nbr_frame, hidden_size=8, output_size=args.n_outputs, num_layers=20)
+# model = ExtendedSimpleRNN(input_size=args.nbr_frame, hidden_size=8, output_size=args.n_outputs, num_layers=20)
+# model = LSTMModel(input_size=args.nbr_frame, hidden_size=8, output_size=args.n_outputs, num_layers=20)
+# model = CNN_RNNModel(input_size=args.nbr_frame, hidden_size=8, output_size=args.n_outputs, num_layers=20)
+# model = torch.nn.DataParallel(model).to(device)
+## RNN IMPLEMENTATION ##
+
 ##### Define Loss & Optimizer #####
 criterion = Loss(args)
 
