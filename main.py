@@ -66,10 +66,10 @@ else:
 # from model.FLAVR_arch_v2_w_inception import UNetWithInception  # Import UNetWithInception
 # from model.FLAVR_arch_w_inception_conv_one import UNetWithInception  # Import UNetWithInception
 # from model.FLAVR_arch_v2 import UNet_3D_3D
-from model.FlowNetS import FlowNetS_Interpolation
+from model.FlowNetS_pre_AE import FlowNetS_Interpolation
 print("Building model: %s"%args.model.lower())
 # model = UNetWithInception(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType, upmode=args.upmode)
-model = FlowNetS_Interpolation()
+model = FlowNetS_Interpolation(pretrained = ".\model\pretrained\FlowNet2-S_checkpoint.pth")
 model = torch.nn.DataParallel(model).to(device)
 
 ##### Define Loss & Optimizer #####

@@ -1,3 +1,3 @@
 @echo off
 rem Training command
-python main.py --batch_size 32 --test_batch_size 32 --dataset vimeo90K_septuplet --loss 1*L1 --max_epoch 200 --lr 0.002 --data_root ./vimeo_septuplet --n_outputs 1 --exp_name opt_flow --checkpoint_dir ckpts --num_workers 4
+python main.py --batch_size 32 --test_batch_size 32 --dataset vimeo90K_septuplet --loss 1*L1 --max_epoch 200 --lr 0.00002 --data_root ./vimeo_septuplet --n_outputs 1 --exp_name FlownetS-pre-bn-AE --checkpoint_dir ckpts --num_workers 4
