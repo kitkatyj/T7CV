@@ -93,13 +93,10 @@ if __name__ == "__main__":
     bottleneck = Bottleneck(512, 256)  # Adjust the bottleneck size as needed
     rnn = VideoRNN(height=7, width=7, channels=512, hidden_dim=[32,64], kernel_size=(3,3), num_layers=2)  # Adjust based on your requirements
     decoder = Decoder(512, 3)  # 128 is the size of the bottleneck, 3 is the number of channels in the output image
-
     video_pipeline = VideoAnalyticsPipeline(encoder, bottleneck, rnn, decoder)
-
     # Use GPU if available
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     video_pipeline = video_pipeline.to(device)
-
     summary(video_pipeline, input_size =(3,256,256))
 
 # Example usage:
