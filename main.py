@@ -12,15 +12,17 @@ import myutils
 from loss import Loss
 from torch.utils.data import DataLoader
 
-def load_checkpoint(args, model, optimizer , path):
+def load_checkpoint(args, model, optimizer, path):
     print("loading checkpoint %s" % path)
     checkpoint = torch.load(path)
     args.start_epoch = checkpoint['epoch'] + 1
     model.load_state_dict(checkpoint['state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer'])
     lr = checkpoint.get("lr" , args.lr)
+    best_psnr = checkpoint['best_psnr']
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
+    return best_psnr
 
 
 ##### Parse CmdLine Arguments #####
@@ -63,21 +65,24 @@ else:
 # from model.FLAVR_arch import UNet_3D_3D
 # from model.
 # from model.FLAVR_arch_w_inception import UNetWithInception  # Import UNetWithInception
-from model.FLAVR_arch_v2_w_inception import UNetWithInception  # Import UNetWithInception
+# from model.FLAVR_arch_v2_w_inception import UNetWithInception  # Import UNetWithInception
 # from model.FLAVR_arch_w_inception_conv_one import UNetWithInception  # Import UNetWithInception
-from model.FLAVR_arch_v2 import UNet_3D_3D
+# from model.FLAVR_arch_v2 import UNet_3D_3D
+from model.Masked_Image_Modelling import MIM_LSTM
 print("Building model: %s"%args.model.lower())
-model = UNetWithInception(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType, upmode=args.upmode)
+# model = UNetWithInception(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType, upmode=args.upmode)
+model = MIM_LSTM()
 model = torch.nn.DataParallel(model).to(device)
 
 ## RNN IMPLEMENTATION ##
-from model.RNN import *
+# from model.RNN import *
 # model = SimpleRNN(input_size=args.nbr_frame, hidden_size=8, output_size=args.n_outputs, num_layers=20)
 # model = MultiLayerRNN(input_size=args.nbr_frame, hidden_size=8, output_size=args.n_outputs, num_layers=20)
 # model = ExtendedSimpleRNN(input_size=args.nbr_frame, hidden_size=8, output_size=args.n_outputs, num_layers=20)
 # model = LSTMModel(input_size=args.nbr_frame, hidden_size=8, output_size=args.n_outputs, num_layers=20)
 # model = CNN_RNNModel(input_size=args.nbr_frame, hidden_size=8, output_size=args.n_outputs, num_layers=20)
 # model = torch.nn.DataParallel(model).to(device)
+
 ## RNN IMPLEMENTATION ##
 
 ##### Define Loss & Optimizer #####
@@ -87,6 +92,9 @@ criterion = Loss(args)
 from torch.optim import Adam
 optimizer = Adam(model.parameters(), lr=args.lr, betas=(args.beta1, args.beta2))
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5, verbose=True)
+
+# best_psnr = 0
+# best_psnr = load_checkpoint(args, model, optimizer, "./ckpts/saved_models_final/vimeo90K_septuplet/MIM_LSTM/latest_checkpoint.pth")
 
 def train(args, epoch):
     losses, psnrs, ssims = myutils.init_meters(args.loss)
