@@ -6,12 +6,19 @@ import torch
 import numpy as np
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
+import torchvision.models as models
 
 import config
 import myutils
 from loss import Loss
 from torch.utils.data import DataLoader
 from torchsummary import summary
+
+from model.FLAVR_arch import UNet_3D_3D
+# from model.FLAVR_arch_w_inception import UNetWithInception  # Import UNetWithInception
+from model.FLAVR_arch_v2_w_inception import UNetWithInception  # Import UNetWithInception
+# from model.FLAVR_arch_w_inception_conv_one import UNetWithInception  # Import UNetWithInception
+from model.FLAVR_arch_v2 import UNet_3D_3D
 
 def load_checkpoint(args, model, optimizer , path):
     print("loading checkpoint %s" % path)
@@ -61,20 +68,40 @@ elif args.dataset == "gopro":
 else:
     raise NotImplementedError
 
-
-
-
-
-from model.FLAVR_arch import UNet_3D_3D
-# from model.
-# from model.FLAVR_arch_w_inception import UNetWithInception  # Import UNetWithInception
-# from model.FLAVR_arch_v2_w_inception import UNetWithInception  # Import UNetWithInception
-# from model.FLAVR_arch_w_inception_conv_one import UNetWithInception  # Import UNetWithInception
-# from model.FLAVR_arch_v2 import UNet_3D_3D
+####
 print("Building model: %s"%args.model.lower())
-model = UNetWithInception(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType, upmode=args.upmode)
-model = torch.nn.DataParallel(model).to(device)
+## UPDATED DIMENSION OF CNN2D_RNN IMPLEMENTATION ##
+from model.CNN2D_RNN import VGGEncoder, Bottleneck, VideoRNN, Decoder, VideoAnalyticsPipeline
+# Initialize VGG16 as the base for the encoder
+vgg_encoder = models.vgg16(pretrained=True)
+encoder = VGGEncoder(vgg_encoder.features)
+bottleneck = Bottleneck(512, 128)  # Adjust the bottleneck size as needed
 
+# The RNN's height, width, and channels should match the output shape of the bottleneck layer
+rnn_height, rnn_width = 28, 16  # Example values, adjust based on actual bottleneck output
+rnn = VideoRNN(height=rnn_height, width=rnn_width, channels=128, hidden_dim=[32, 64], kernel_size=(3, 3), num_layers=2)
+# decoder = Decoder(512, 3)  # 128 is the size of the bottleneck, 3 is the number of channels in the output image
+decoder = Decoder(input_size=64, output_channels=3)  # Adjust 'input_size' based on RNN's output
+video_pipeline = VideoAnalyticsPipeline(encoder, bottleneck, rnn, decoder)
+# Use GPU if available
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+video_pipeline = video_pipeline.to(device)
+model = video_pipeline
+summary(video_pipeline, input_size =(3,256,448))
+## CNN2D_RNN IMPLEMENTATION ##
+
+## ORG CNN2D_RNN IMPLEMENTATION ##
+# vgg_encoder = models.vgg16(pretrained=True)
+# encoder = VGGEncoder(vgg_encoder.features)
+# bottleneck = Bottleneck(512, 256)  # Adjust the bottleneck size as needed
+# rnn = VideoRNN(height=7, width=7, channels=512, hidden_dim=[32,64], kernel_size=(3,3), num_layers=2)  # Adjust based on your requirements
+# decoder = Decoder(512, 3)  # 128 is the size of the bottleneck, 3 is the number of channels in the output image
+# video_pipeline = VideoAnalyticsPipeline(encoder, bottleneck, rnn, decoder)
+# # Use GPU if available
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# video_pipeline = video_pipeline.to(device)
+# summary(video_pipeline, input_size =(3,256,256))
+## ORG CNN2D_RNN IMPLEMENTATION ##
 
 ## RNN IMPLEMENTATION ##
 # from model.RNN import *
@@ -87,20 +114,12 @@ model = torch.nn.DataParallel(model).to(device)
 ## RNN IMPLEMENTATION ##
 
 ## HYPBRID IMPLEMENTATION ##
-from model.hybrid_pretrained import *
+# from model.hybrid_pretrained import *
 # model = EncoderDecoderHybrid()
 # model = EncoderDecoderHybrid(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType, upmode=args.upmode)
 ## HYPBRID IMPLEMENTATION ##
 
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = UNet_3D_3D(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType, upmode=args.upmode).to(device)
-# Input size may vary depending on your model's input requirements
-input_size = (12, 256, 256)  # Assuming an RGB image with size 224x224
-summary(model, input_size=input_size, device=device)
-
-
-model = torch.nn.DataParallel(model).to(device)
 ##### Define Loss & Optimizer #####
 criterion = Loss(args)
 

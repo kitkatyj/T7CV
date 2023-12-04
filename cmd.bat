@@ -1,2 +1,3 @@
 call ".\venv\scripts\activate"
-py main.py --batch_size 6 --test_batch_size 6 --num_workers 8 --dataset vimeo90K_septuplet --loss 1*L1 --max_epoch 1 --lr 0.0002 --data_root "D:\vimeo_septuplet" --n_outputs 1 --exp_name "v3_cnn_temp"
+py main.py --batch_size 8 --test_batch_size 8 --dataset vimeo90K_septuplet --loss 1*L1 --max_epoch 1 --lr 0.0002 --data_root "C:\vimeo_septuplet" --n_outputs 1 --exp_name "v5_cnn_rnn_temp_with_dim"
+@REM py main.py --batch_size 8 --test_batch_size 8 --num_workers 16 --dataset vimeo90K_septuplet --loss 1*L1 --max_epoch 1 --lr 0.0002 --data_root "C:\vimeo_septuplet" --n_outputs 1 --exp_name "v5_cnn_rnn_temp_with_dim"

@@ -50,6 +50,7 @@ writer = SummaryWriter(writer_loc)
 
 device = torch.device('cuda' if args.cuda else 'cpu')
 
+
 torch.backends.cudnn.enabled = True
 torch.backends.cudnn.benchmark = True
 
@@ -69,55 +70,45 @@ else:
     raise NotImplementedError
 
 
+
 print("Building model: %s"%args.model.lower())
-## UPDATED FIMENSION OF CNN2D_RNN IMPLEMENTATION ##
+## UPDATED DIMENSION OF CNN2D_RNN IMPLEMENTATION ##
 from model.CNN2D_RNN import VGGEncoder, Bottleneck, VideoRNN, Decoder, VideoAnalyticsPipeline
 # Initialize VGG16 as the base for the encoder
 vgg_encoder = models.vgg16(pretrained=True)
-encoder = VGGEncoder(vgg_encoder.features)
-bottleneck = Bottleneck(512, 128)  # Adjust the bottleneck size as needed
 
-# The RNN's height, width, and channels should match the output shape of the bottleneck layer
-rnn_height, rnn_width = 28, 16  # Example values, adjust based on actual bottleneck output
-rnn = VideoRNN(height=rnn_height, width=rnn_width, channels=128, hidden_dim=[32, 64], kernel_size=(3, 3), num_layers=2)
-# decoder = Decoder(512, 3)  # 128 is the size of the bottleneck, 3 is the number of channels in the output image
-decoder = Decoder(input_size=64, output_channels=3)  # Adjust 'input_size' based on RNN's output
-video_pipeline = VideoAnalyticsPipeline(encoder, bottleneck, rnn, decoder)
-# Use GPU if available
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-video_pipeline = video_pipeline.to(device)
-model = video_pipeline
-summary(video_pipeline, input_size =(3,256,448))
-## CNN2D_RNN IMPLEMENTATION ##
+#Modified VGG without last layer
+encoder = VGGEncoder(device, vgg_encoder).features
+# input_tensor = torch.rand(1, 3, 224, 224)  # Batch size of 1, 3 color channels, 224x224 pixels
+# output = encoder(input_tensor)
+# print(output.shape) # torch.Size([1, 512, 14, 14])
+# Batch Size: 1; Number of Channels: 512; Spatial Dimensions: 14 x 14;
 
-## ORG CNN2D_RNN IMPLEMENTATION ##
-# vgg_encoder = models.vgg16(pretrained=True)
-# encoder = VGGEncoder(vgg_encoder.features)
+# Reduce dimensionality and flatten
 # bottleneck = Bottleneck(512, 256)  # Adjust the bottleneck size as needed
+# bottleneck = Bottleneck(512 * 14 * 14, 256)  # Adjust the bottleneck size as needed
+bottleneck = Bottleneck(device, 512 * 16 * 16, 256)  # Adjust the bottleneck size as needed
+# input_tensor = torch.rand(1, 3, 224, 224)  # Batch size of 1, 3 color channels, 224x224 pixels
+# vgg_output  = encoder(input_tensor)
+# vgg_output_flattened = vgg_output .view(vgg_output .size(0), -1)  # Flatten the VGG output
+# output = bottleneck(vgg_output_flattened)
+# print(output.shape) # torch.Size([1, 256]) #256
+
+# rnn = VideoRNN(height=448, width=256, channels=3, hidden_dim=[32,64], kernel_size=(3,3), num_layers=2)  # Adjust based on your requirements
+rnn = VideoRNN(device, height=16, width=16, channels=512, hidden_dim=[32,64], kernel_size=(3,3), num_layers=2)  # Adjust based on your requirements
 # rnn = VideoRNN(height=7, width=7, channels=512, hidden_dim=[32,64], kernel_size=(3,3), num_layers=2)  # Adjust based on your requirements
-# decoder = Decoder(512, 3)  # 128 is the size of the bottleneck, 3 is the number of channels in the output image
-# video_pipeline = VideoAnalyticsPipeline(encoder, bottleneck, rnn, decoder)
-# # Use GPU if available
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-# video_pipeline = video_pipeline.to(device)
+decoder = Decoder(device, 64, 3)  # 128 is the size of the bottleneck, 3 is the number of channels in the output image
+video_pipeline = VideoAnalyticsPipeline(device, encoder, bottleneck, rnn, decoder)
+
+
+video_pipeline = video_pipeline.cuda()
+
+
 # summary(video_pipeline, input_size =(3,256,256))
-## ORG CNN2D_RNN IMPLEMENTATION ##
 
-## RNN IMPLEMENTATION ##
-# from model.RNN import *
-# model = SimpleRNN(input_size=args.nbr_frame, hidden_size=8, output_size=args.n_outputs, num_layers=20)
-# model = MultiLayerRNN(input_size=args.nbr_frame, hidden_size=8, output_size=args.n_outputs, num_layers=20)
-# model = ExtendedSimpleRNN(input_size=args.nbr_frame, hidden_size=8, output_size=args.n_outputs, num_layers=20)
-# model = LSTMModel(input_size=args.nbr_frame, hidden_size=8, output_size=args.n_outputs, num_layers=20)
-# model = CNN_RNNModel(input_size=args.nbr_frame, hidden_size=8, output_size=args.n_outputs, num_layers=20)
-# model = torch.nn.DataParallel(model).to(device)
-## RNN IMPLEMENTATION ##
+model = video_pipeline
 
-## HYPBRID IMPLEMENTATION ##
-# from model.hybrid_pretrained import *
-# model = EncoderDecoderHybrid()
-# model = EncoderDecoderHybrid(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType, upmode=args.upmode)
-## HYPBRID IMPLEMENTATION ##
+## CNN2D_RNN IMPLEMENTATION ##
 
 
 ##### Define Loss & Optimizer #####
@@ -137,15 +128,30 @@ def train(args, epoch):
     for i, (images, gt_image) in enumerate(train_loader):
 
         # Build input batch
+        # images = [img_.cuda() for img_ in images]
+        # gt = [gt_.cuda() for gt_ in gt_image]
         images = [img_.cuda() for img_ in images]
         gt = [gt_.cuda() for gt_ in gt_image]
 
         # Forward
         optimizer.zero_grad()
         out = model(images)
+
+        print(f"out: {type(out)}")
+        print(f"gt: {type(gt)}")
         
-        out = torch.cat(out)
-        gt = torch.cat(gt)
+        # if isinstance(out, list):
+        #     out = torch.cat(out, dim=0)
+        # if isinstance(out, list):
+        #     gt = torch.cat(gt, dim=0)
+
+        if isinstance(out, list):
+            out = torch.stack(out, dim=0)
+        if isinstance(gt, list):
+            gt = torch.stack(gt, dim=0)
+
+        print(f"out: {type(out)}")
+        print(f"gt: {type(gt)}")
 
         loss, loss_specific = criterion(out, gt)
         
@@ -186,6 +192,9 @@ def test(args, epoch):
     t = time.time()
     with torch.no_grad():
         for i, (images, gt_image) in enumerate(tqdm(test_loader)):
+
+            # images = [img_.cuda() for img_ in images]
+            # gt = [gt_.cuda() for gt_ in gt_image]
 
             images = [img_.cuda() for img_ in images]
             gt = [gt_.cuda() for gt_ in gt_image]

@@ -55,6 +55,9 @@ class ConvGRUCell(nn.Module):
         :return: h_next,
             next hidden state
         """
+        device = input_tensor.device
+        input_tensor = input_tensor.cuda()
+        h_cur = h_cur.cuda()
         combined = torch.cat([input_tensor, h_cur], dim=1)
         combined_conv = self.conv_gates(combined)
 
