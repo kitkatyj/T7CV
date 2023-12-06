@@ -2,9 +2,12 @@ import torch
 import torch.nn as nn
 import torchvision.models as models
 import torch.nn.functional as F
-from .pretrained.FlowNetS import FlowNetS
+try:
+    from .pretrained.FlowNetS import FlowNetS
+except:
+    from pretrained.FlowNetS import FlowNetS
 
-from torchsummary import summary
+# from torchsummary import summary
 
 # Step 1: Define the Encoder using VGG16
 class Encoder(nn.Module):
@@ -145,7 +148,9 @@ class InterpolateFrames(nn.Module):
         return interp_flow2
     
 if __name__ == "__main__":
-    model = FlowNetS_Interpolation().cuda()
+    model = FlowNetS_Interpolation() #.cuda() 
+    num_params = sum(p.numel() for p in model.parameters()) 
+    print("Number of parameters in the model:", num_params)
     # inputs = [torch.randn((1, 3, 256, 256)).cuda() for _ in range(4)]
     # # summary(model, input_size = (12, 256, 256), device  = 'cuda')
     # x = model(inputs)[0]

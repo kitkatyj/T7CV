@@ -1,7 +1,10 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from .pretrained.FlowNetS import FlowNetS
+try:
+    from .pretrained.FlowNetS import FlowNetS
+except:
+    from pretrained.FlowNetS import FlowNetS
 
 from torchsummary import summary
 
@@ -16,7 +19,7 @@ class FlowNetS_Interpolation(nn.Module):
     def __init__(self, batchNorm=True, pretrained = None):
         super(FlowNetS_Interpolation, self).__init__()
 
-        self.flownet = FlowNetS(input_channels=12, batchNorm=True)
+        self.flownet = FlowNetS(input_channels=12, batchNorm=False)
         if pretrained:
             # Load the checkpoint
             checkpoint = torch.load(pretrained)
@@ -95,5 +98,8 @@ class InterpolateFrames(nn.Module):
         return interp_flow2
     
 if __name__ == "__main__":
-    model = FlowNetS_Interpolation().cuda()
+    model = FlowNetS_Interpolation() #.cuda()
+    num_params = sum(p.numel() for p in model.parameters()) 
+    print("Number of parameters in the model:", num_params)
+
     # summary(model, input_size = (12, 256, 256), device  = 'cuda')

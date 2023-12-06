@@ -156,3 +156,8 @@ class InterpolateFrames(nn.Module):
         interp_flow1 = t * flow1 + (1 - t) * F.interpolate(interp_flow2, scale_factor=2, mode='bilinear', align_corners=False)
         interp_flow = F.interpolate(interp_flow1, scale_factor=2, mode='bilinear', align_corners=False)
         return interp_flow
+
+if __name__ == "__main__":
+    model = FlowNetS_Interpolation()
+    num_params = sum(p.numel() for p in model.parameters()) 
+    print("Number of parameters in the model:", num_params)

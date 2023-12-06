@@ -37,6 +37,7 @@ class VimeoSepTuplet(Dataset):
             ])
         else:
             self.transforms = transforms.Compose([
+                transforms.CenterCrop(256),
                 transforms.ToTensor()
             ])
 
