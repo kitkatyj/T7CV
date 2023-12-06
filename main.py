@@ -68,10 +68,10 @@ else:
 # from model.FLAVR_arch_v2_w_inception import UNetWithInception  # Import UNetWithInception
 # from model.FLAVR_arch_w_inception_conv_one import UNetWithInception  # Import UNetWithInception
 # from model.FLAVR_arch_v2 import UNet_3D_3D
-from model.Masked_Image_Modelling import MIM_LSTM
+from model.Masked_Image_Modelling import MIM_LSTM, MIM_TCN, MIM_transformer
 print("Building model: %s"%args.model.lower())
 # model = UNetWithInception(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType, upmode=args.upmode)
-model = MIM_LSTM()
+model = MIM_TCN()
 model = torch.nn.DataParallel(model).to(device)
 
 ## RNN IMPLEMENTATION ##
