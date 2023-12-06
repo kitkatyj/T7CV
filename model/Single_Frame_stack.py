@@ -56,5 +56,7 @@ class Autoencoder(nn.Module):
         return [x]
 
 if __name__ == "__main__":
-    model = Autoencoder().cuda()
-    summary(model, input_size = (12,256,256)) 
+    model = Autoencoder()
+    num_params = sum(p.numel() for p in model.parameters())
+    print("Number of parameters in the model:", num_params)
+    # summary(model, input_size = (12,256,256)) 

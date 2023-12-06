@@ -47,3 +47,8 @@ class Autoencoder(nn.Module):
         x = self.encoder(x)
         x = self.decoder(x)
         return [x]
+    
+if __name__ == '__main__':
+    model = Autoencoder()
+    num_params = sum(p.numel() for p in model.parameters())
+    print("Number of parameters in the model:", num_params)
