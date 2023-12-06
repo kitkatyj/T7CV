@@ -71,7 +71,7 @@ else:
 from model.Masked_Image_Modelling import MIM_LSTM, MIM_TCN, MIM_transformer
 print("Building model: %s"%args.model.lower())
 # model = UNetWithInception(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType, upmode=args.upmode)
-model = MIM_TCN()
+model = MIM_transformer()
 model = torch.nn.DataParallel(model).to(device)
 
 ## RNN IMPLEMENTATION ##

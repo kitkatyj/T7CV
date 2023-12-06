@@ -229,8 +229,9 @@ if __name__ == "__main__":
     # # x = model([random_tensor,random_tensor,random_tensor,random_tensor])
     # x = model(random_tensor)
     # print(x.shape)
-    model = MIM_transformer()
-    x = model([torch.randn((2, 3, 256, 256)) for _ in range(4)])
+    # model = MIM_transformer()
+    model = MIM_TCN()
+    x = model([torch.randn((2, 3, 256, 448)) for _ in range(4)])
     # x = model(x)
     print(x[0].shape)
     def count_parameters(model):
