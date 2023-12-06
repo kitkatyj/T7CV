@@ -1,7 +1,6 @@
 import os
 import sys
 import time
-from datetime import datetime
 
 import torch
 import numpy as np
@@ -12,6 +11,11 @@ import config
 import myutils
 from loss import Loss
 from torch.utils.data import DataLoader
+
+try:
+    from torch.hub import load_state_dict_from_url
+except ImportError:
+    from torch.utils.model_zoo import load_url as load_state_dict_from_url
 
 def load_checkpoint(args, model, optimizer , path):
     print("loading checkpoint %s" % path)
@@ -62,28 +66,16 @@ else:
 
 
 # from model.FLAVR_arch import UNet_3D_3D
-# from model.
-# from model.FLAVR_arch_w_inception import UNetWithInception  # Import UNetWithInception
-# from model.FLAVR_arch_v2_w_inception import UNetWithInception  # Import UNetWithInception
-# from model.FLAVR_arch_w_inception_conv_one import UNetWithInception  # Import UNetWithInception
-# from model.FLAVR_arch_v2 import UNet_3D_3D
-from model.FLAVR_arch_w_inception_net import UNet_3D_3D
-# from model.UNETR import UNETR
+# from model.FLAVR_lstm_startEnd import UNet_3D_3D_lstm_startEnd
+# from model.FLAVR_arch_lstm_middle import UNet_3D_3D_lstm_middle
+from model.UNETR import UNETR
 
 print("Building model: %s"%args.model.lower())
-# model = UNETR()
-model = UNet_3D_3D(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType, upmode=args.upmode)
+# model = UNet_3D_3D(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType, upmode=args.upmode)
+model = UNETR()
+# model = UNet_3D_3D_lstm_startEnd(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType, upmode=args.upmode)
+# model = UNet_3D_3D_lstm_middle(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType, upmode=args.upmode)
 model = torch.nn.DataParallel(model).to(device)
-
-# ## RNN IMPLEMENTATION ##
-# from model.RNN import *
-# model = SimpleRNN(input_size=args.nbr_frame, hidden_size=8, output_size=args.n_outputs, num_layers=20)
-# # model = MultiLayerRNN(input_size=args.nbr_frame, hidden_size=8, output_size=args.n_outputs, num_layers=20)
-# # model = ExtendedSimpleRNN(input_size=args.nbr_frame, hidden_size=8, output_size=args.n_outputs, num_layers=20)
-# # model = LSTMModel(input_size=args.nbr_frame, hidden_size=8, output_size=args.n_outputs, num_layers=20)
-# # model = CNN_RNNModel(input_size=args.nbr_frame, hidden_size=8, output_size=args.n_outputs, num_layers=20)
-# model = torch.nn.DataParallel(model).to(device)
-# ## RNN IMPLEMENTATION ##
 
 ##### Define Loss & Optimizer #####
 criterion = Loss(args)
@@ -141,7 +133,7 @@ def train(args, epoch):
                     'optimizer': optimizer.state_dict(),
                     'best_psnr': psnrs.avg,
                     'lr' : optimizer.param_groups[-1]['lr']
-                }, save_loc, "UNETR_" + str(psnrs.avg) + "--" + str(len(train_loader)) + "_" + str(datetime.now().strftime('%d-%m-%Y-%H-%M')))
+                }, save_loc, "UNETR_" + str(psnrs.avg) + "--" + str(len(train_loader)))
 
             
             # Log to TensorBoard
