@@ -81,9 +81,9 @@ class VideoAnalyticsPipeline(nn.Module):
         x = [img_.cuda() for img_ in x]
         ############################ PT 1 - START ############################
         #TENSOR LIST
-        print(f"Number of elements in the {type(x)}:", len(x))
-        for i, tensor in enumerate(x):
-            print(f"Shape of tensor {i}: {tensor.shape}")
+        # print(f"Number of elements in the {type(x)}:", len(x))
+        # for i, tensor in enumerate(x):
+        #     print(f"Shape of tensor {i}: {tensor.shape}")
         # # Number of elements in the list: 4
         # Shape of tensor 0: torch.Size([1, 3, 256, 256])
         # Shape of tensor 1: torch.Size([1, 3, 256, 256])
@@ -106,9 +106,9 @@ class VideoAnalyticsPipeline(nn.Module):
         # Concatenate the tensors along the batch dimension
         x = torch.cat(x, dim=0)  # x is a list of tensors concatenate 
         # x = torch.stack(x, dim=1)  # x is a list of tensors concatenate 
-        print(f"after concatenate | Number of elements in the {type(x)}:", len(x))
-        for i, tensor in enumerate(x):
-            print(f"Shape of tensor {i}: {tensor.shape}")
+        # print(f"after concatenate | Number of elements in the {type(x)}:", len(x))
+        # for i, tensor in enumerate(x):
+        #     print(f"Shape of tensor {i}: {tensor.shape}")
         # after concatenate | Number of elements in the <class 'torch.Tensor'>: 2
         # Shape of tensor 0: torch.Size([3, 256, 256])
         # Shape of tensor 1: torch.Size([3, 256, 256])
@@ -119,9 +119,9 @@ class VideoAnalyticsPipeline(nn.Module):
         x = self.encoder(x)
 
         #TENSOR LIST
-        print(f"after encoder | Number of elements in the {type(x)}:", len(x))
-        for i, tensor in enumerate(x):
-            print(f"Shape of tensor {i}: {tensor.shape}")
+        # print(f"after encoder | Number of elements in the {type(x)}:", len(x))
+        # for i, tensor in enumerate(x):
+        #     print(f"Shape of tensor {i}: {tensor.shape}")
         # after encoder | Number of elements in the <class 'torch.Tensor'>: 2
         # Shape of tensor 0: torch.Size([512, 16, 16])
         # Shape of tensor 1: torch.Size([512, 16, 16])
@@ -142,15 +142,15 @@ class VideoAnalyticsPipeline(nn.Module):
         # x = x.unsqueeze(0)  # Reshape to [1, 4, 512, 16, 16]
 
         x = x.unsqueeze(0)  # Add temporal dimension
-        print(f"after unsequeeze | Number of elements in the {type(x)}:", len(x))
-        for i, tensor in enumerate(x):
-            print(f"Shape of tensor {i}: {tensor.shape}")
+        # print(f"after unsequeeze | Number of elements in the {type(x)}:", len(x))
+        # for i, tensor in enumerate(x):
+        #     print(f"Shape of tensor {i}: {tensor.shape}")
         x = self.rnn(x)
 
         #TENSOR LIST
-        print(f"after RNN | Number of elements in the {type(x)}:", len(x))
-        for i, tensor in enumerate(x):
-            print(f"Shape of tensor {i}: {tensor.shape}")
+        # print(f"after RNN | Number of elements in the {type(x)}:", len(x))
+        # for i, tensor in enumerate(x):
+        #     print(f"Shape of tensor {i}: {tensor.shape}")
         # Number of elements in the list: 1
         # Shape of tensor 0: torch.Size([64, 16, 16])
         ############################ PT 5 - END ############################
@@ -160,9 +160,9 @@ class VideoAnalyticsPipeline(nn.Module):
         x = self.decoder(x)
 
         #TENSOR LIST
-        print(f"Number of elements in the {type(x)}:", len(x))
-        for i, tensor in enumerate(x):
-            print(f"Shape of tensor {i}: {tensor.shape}")
+        # print(f"Number of elements in the {type(x)}:", len(x))
+        # for i, tensor in enumerate(x):
+        #     print(f"Shape of tensor {i}: {tensor.shape}")
         # Number of elements in the list: 1
         # Shape of tensor 0: torch.Size([3, 256, 256])
         ############################ PT 6 - END ############################
