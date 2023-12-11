@@ -1,32 +1,26 @@
 import torch
 import torch.nn as nn
 import torchvision.models as models
-from .ConvGRU import ConvGRU
+
 from torchsummary import summary
 import numpy as np
+
+try:
+    from ConvGRU import ConvGRU
+except ImportError:
+    from .ConvGRU import ConvGRU
 
 # Encoder using VGG Feature Extractor
 class VGGEncoder(nn.Module):
     def __init__(self, device, original_model):
         super(VGGEncoder, self).__init__()
         # Remove the fully connected layers (classification head)
-        self.features = nn.Sequential(*list(original_model.features.children())[:-1])
+        self.features = nn.Sequential(*list(original_model.children())[:-1])
         self.cuda()
 
     def forward(self, x):
         return self.features(x)
 
-# Bottleneck
-class Bottleneck(nn.Module):
-    def __init__(self, device, input_size, bottleneck_size):
-        super(Bottleneck, self).__init__()
-        self.bottleneck = nn.Linear(input_size, bottleneck_size)
-        self.bottleneck.cuda()
-
-    def forward(self, x):
-        x = x.view(x.size(0), -1)  # Flatten the input
-        x = self.bottleneck(x)
-        return x
 
 # RNN for Temporal Information
 class VideoRNN(nn.Module):
@@ -71,12 +65,13 @@ class Decoder(nn.Module):
 
 # Full Pipeline combining the above classes
 class VideoAnalyticsPipeline(nn.Module):
-    def __init__(self, device, encoder, bottleneck, rnn, decoder):
+    def __init__(self, device):
         super(VideoAnalyticsPipeline, self).__init__()
-        self.encoder = encoder
-        self.bottleneck = bottleneck
-        self.rnn = rnn
-        self.decoder = decoder
+        vgg_encoder = models.vgg16(pretrained=True).features
+        self.encoder = VGGEncoder(device, vgg_encoder)
+        self.rnn = VideoRNN(device, height=16, width=16, channels=512, hidden_dim=[32,64], kernel_size=(3,3), num_layers=2)  # Adjust based on your requirements
+         # Set up the full pipeline with VGG16
+        self.decoder = Decoder(device, 64, 3)  # 128 is the size of the bottleneck, 3 is the number of channels in the output image
         self.cuda()
 
     def forward(self, x):
@@ -86,24 +81,37 @@ class VideoAnalyticsPipeline(nn.Module):
         x = [img_.cuda() for img_ in x]
         ############################ PT 1 - START ############################
         #TENSOR LIST
-        # list_length = len(x)
-        # print("Number of elements in the list:", list_length)
-        # for i, tensor in enumerate(x):
-        #     print(f"Shape of tensor {i}: {tensor.shape}")
+        print(f"Number of elements in the {type(x)}:", len(x))
+        for i, tensor in enumerate(x):
+            print(f"Shape of tensor {i}: {tensor.shape}")
         # # Number of elements in the list: 4
         # Shape of tensor 0: torch.Size([1, 3, 256, 256])
         # Shape of tensor 1: torch.Size([1, 3, 256, 256])
         # Shape of tensor 2: torch.Size([1, 3, 256, 256])
         # Shape of tensor 3: torch.Size([1, 3, 256, 256])
         
-        #NPY
-        # print(x.shape) # torch.Size([2, 512, 16, 16])
         ############################ PT 1 - END ############################
+
+        # x = torch.stack(x, dim=0)  # Shape becomes [sequence_length, channels, height, width]
+        # if len(x.shape) == 4:
+        #     x = x.unsqueeze(0) 
+        # x = x.to(device)
+        # # Continue with the existing processing
+        # x = self.encoder(x)
+        # x = self.rnn(x)
+        # x = self.decoder(x)
 
         ############################ PT 2 - START ############################
         #TENSOR LIST
         # Concatenate the tensors along the batch dimension
-        x = torch.cat(x, dim=0)  # x is a list of tensors
+        x = torch.cat(x, dim=0)  # x is a list of tensors concatenate 
+        # x = torch.stack(x, dim=1)  # x is a list of tensors concatenate 
+        print(f"after concatenate | Number of elements in the {type(x)}:", len(x))
+        for i, tensor in enumerate(x):
+            print(f"Shape of tensor {i}: {tensor.shape}")
+        # after concatenate | Number of elements in the <class 'torch.Tensor'>: 2
+        # Shape of tensor 0: torch.Size([3, 256, 256])
+        # Shape of tensor 1: torch.Size([3, 256, 256])
         ############################ PT 2 - END ############################
 
         ############################ PT 3 - START ############################
@@ -111,51 +119,36 @@ class VideoAnalyticsPipeline(nn.Module):
         x = self.encoder(x)
 
         #TENSOR LIST
-        list_length = len(x)
-        print("Number of elements in the list:", list_length)
+        print(f"after encoder | Number of elements in the {type(x)}:", len(x))
         for i, tensor in enumerate(x):
             print(f"Shape of tensor {i}: {tensor.shape}")
-        # Number of elements in the list: 4
+        # after encoder | Number of elements in the <class 'torch.Tensor'>: 2
         # Shape of tensor 0: torch.Size([512, 16, 16])
         # Shape of tensor 1: torch.Size([512, 16, 16])
-        # Shape of tensor 2: torch.Size([512, 16, 16])
-        # Shape of tensor 3: torch.Size([512, 16, 16])
 
-        #array
-        # print(x.shape) # torch.Size([2, 512, 16, 16])
         ############################ PT 3 - END ############################
-
-        ############################ PT 4 - START ############################
-        # # Temporal Bottleneck
-        # x = self.bottleneck(x)
-
-        # #TENSOR LIST
-        # list_length = len(x)
-        # print("Number of elements in the list:", list_length)
-        # for i, tensor in enumerate(x):
-        #     print(f"Shape of tensor {i}: {tensor.shape}")
-        # # Shape of tensor 0: torch.Size([256])
-        # # Shape of tensor 1: torch.Size([256])
-        # # Shape of tensor 2: torch.Size([256])
-        # # Shape of tensor 3: torch.Size([256])
-        ############################ PT 4 - END ############################
 
         ############################ PT 5 - START ############################
         # RNN for Temporal Information
 
         # # Stack tensors along a new dimension to create a sequence
-        # stacked_input = torch.stack(x, dim=0)  # This creates a tensor of shape [4, 512, 16, 16]
+        # x = torch.stack(x, dim=0)  # This creates a tensor of shape [4, 512, 16, 16]
+        # print(f"after stack | Number of elements in the {type(x)}:", len(x))
+        # for i, tensor in enumerate(x):
+        #     print(f"Shape of tensor {i}: {tensor.shape}")
 
         # If batch_first=True, reshape to [batch_size, sequence_length, channels, height, width]
         # Here, batch_size=1 since you have one sequence of 4 frames
         # x = x.unsqueeze(0)  # Reshape to [1, 4, 512, 16, 16]
 
-        x = x.unsqueeze(1)  # Add temporal dimension
+        x = x.unsqueeze(0)  # Add temporal dimension
+        print(f"after unsequeeze | Number of elements in the {type(x)}:", len(x))
+        for i, tensor in enumerate(x):
+            print(f"Shape of tensor {i}: {tensor.shape}")
         x = self.rnn(x)
 
         #TENSOR LIST
-        list_length = len(x)
-        print("Number of elements in the list:", list_length)
+        print(f"after RNN | Number of elements in the {type(x)}:", len(x))
         for i, tensor in enumerate(x):
             print(f"Shape of tensor {i}: {tensor.shape}")
         # Number of elements in the list: 1
@@ -167,28 +160,27 @@ class VideoAnalyticsPipeline(nn.Module):
         x = self.decoder(x)
 
         #TENSOR LIST
-        list_length = len(x)
-        print("Number of elements in the list:", list_length)
+        print(f"Number of elements in the {type(x)}:", len(x))
         for i, tensor in enumerate(x):
             print(f"Shape of tensor {i}: {tensor.shape}")
         # Number of elements in the list: 1
         # Shape of tensor 0: torch.Size([3, 256, 256])
         ############################ PT 6 - END ############################
 
+        # x = x.unsqueeze(0)
+        # print(f"Number of final elements in the {type(x)}:", len(x))
+        # for i, tensor in enumerate(x):
+        #     print(f"Shape of tensor {i}: {tensor.shape}")
+
         return x
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    # Set up the full pipeline with VGG16
-    vgg_encoder = models.vgg16(pretrained=True)
-    encoder = VGGEncoder(device, vgg_encoder.features)
-    bottleneck = Bottleneck(device, 512, 256)  # Adjust the bottleneck size as needed
-    rnn = VideoRNN(device, height=7, width=7, channels=512, hidden_dim=[32,64], kernel_size=(3,3), num_layers=2)  # Adjust based on your requirements
-    decoder = Decoder(device, 512, 3)  # 128 is the size of the bottleneck, 3 is the number of channels in the output image
-    video_pipeline = VideoAnalyticsPipeline(device, encoder, bottleneck, rnn, decoder)
+    video_pipeline = VideoAnalyticsPipeline(device)
     # Use GPU if available
     video_pipeline = video_pipeline.cuda()
-    summary(video_pipeline, input_size =(3,256,256))
+    # summary(video_pipeline, input_size =(3,256,256))
+    summary(video_pipeline, input_size =(1,3,256,256))
+   
 
 # Example usage:
 # Assuming you have a video sequence tensor 'video_sequence' (batch_size, sequence_length, channels, height, width)
