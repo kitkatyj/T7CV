@@ -166,9 +166,7 @@ class FlowNetS_Interpolation(nn.Module):
         
         # Interpolate optical flows to get intermediate flow at time t
         interp_flow = self.interpolate_frames(flow2, flow3, flow4, flow5, flow6, t)
-
         interp_flow = self.upsample1(interp_flow)
-
         # Warp frame2 and frame3 using the interpolated flow
         warped_frame2 = self.warp(frames[1], interp_flow)
         warped_frame3 = self.warp(frames[2], interp_flow)

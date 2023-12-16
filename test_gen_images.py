@@ -46,7 +46,7 @@ print("Building model: %s"%args.model.lower())
 # from model.UNETR import UNETR
 # model = UNETR()
 # model = UNet_3D_3D_lstm_middle(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType, upmode=args.upmode)
-from model.FlowNetS_pre_LAE import FlowNetS_Interpolation
+from model.FlowNetS_unet_noskipflow import FlowNetS_Interpolation
 model = FlowNetS_Interpolation()
 model = torch.nn.DataParallel(model).to(device)
 print("#params" , sum([p.numel() for p in model.parameters()]))
