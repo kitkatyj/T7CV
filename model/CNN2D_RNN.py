@@ -69,7 +69,8 @@ class VideoAnalyticsPipeline(nn.Module):
         super(VideoAnalyticsPipeline, self).__init__()
         vgg_encoder = models.vgg16(pretrained=True).features
         self.encoder = VGGEncoder(device, vgg_encoder)
-        self.rnn = VideoRNN(device, height=16, width=16, channels=512, hidden_dim=[32,64], kernel_size=(3,3), num_layers=2)  # Adjust based on your requirements
+        rnn_height, rnn_width = 16, 16  
+        self.rnn = VideoRNN(device, height=rnn_height, width=rnn_width, channels=512, hidden_dim=[32,64], kernel_size=(3,3), num_layers=2)  # Adjust based on your requirements
          # Set up the full pipeline with VGG16
         self.decoder = Decoder(device, 64, 3)  # 128 is the size of the bottleneck, 3 is the number of channels in the output image
         self.cuda()
@@ -179,7 +180,7 @@ if __name__ == "__main__":
     # Use GPU if available
     video_pipeline = video_pipeline.cuda()
     # summary(video_pipeline, input_size =(3,256,256))
-    summary(video_pipeline, input_size =(1,3,256,256))
+    # summary(video_pipeline, input_size =(1,3,256,256))
    
 
 # Example usage:

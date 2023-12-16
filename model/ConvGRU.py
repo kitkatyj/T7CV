@@ -58,6 +58,8 @@ class ConvGRUCell(nn.Module):
         device = input_tensor.device
         input_tensor = input_tensor.cuda()
         h_cur = h_cur.cuda()
+        print("ConvGRUCell forward input_tensor.shape", input_tensor.shape)
+        print("ConvGRUCell forward h_cur.shape", h_cur.shape)
         combined = torch.cat([input_tensor, h_cur], dim=1)
         combined_conv = self.conv_gates(combined)
 
@@ -116,10 +118,12 @@ class ConvGRU(nn.Module):
         self.batch_first = batch_first
         self.bias = bias
         self.return_all_layers = return_all_layers
+        print("convGRU init input_dim: ", input_dim)
 
         cell_list = []
         for i in range(0, self.num_layers):
             cur_input_dim = input_dim if i == 0 else hidden_dim[i - 1]
+            print("convGRU init cur_input_dim: ", cur_input_dim)
             cell_list.append(ConvGRUCell(input_size=(self.height, self.width),
                                          input_dim=cur_input_dim,
                                          hidden_dim=self.hidden_dim[i],

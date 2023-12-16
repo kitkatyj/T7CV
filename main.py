@@ -152,7 +152,7 @@ def test(args, epoch):
             gt = [gt_.cuda() for gt_ in gt_image]
 
             out = model(images) ## images is a list of neighboring frames
-            out = torch.cat(out)
+            # out = torch.cat(out)
             gt = torch.cat(gt)
 
             # Save loss values
