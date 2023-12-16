@@ -173,3 +173,4 @@ vimeo_septuplet/
 tensorboard_logs_vimeo90K_septuplet_final/
 saved_models_final/
 env/
+ckpts/

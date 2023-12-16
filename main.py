@@ -66,7 +66,7 @@ else:
 # from model.FLAVR_arch_v2_w_inception import UNetWithInception  # Import UNetWithInception
 # from model.FLAVR_arch_w_inception_conv_one import UNetWithInception  # Import UNetWithInception
 # from model.FLAVR_arch_v2 import UNet_3D_3D
-from model.FlowNetS_pre_AE import FlowNetS_Interpolation
+from model.FlowNetS_unet_noskipflow import FlowNetS_Interpolation
 print("Building model: %s"%args.model.lower())
 # model = UNetWithInception(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType, upmode=args.upmode)
 model = FlowNetS_Interpolation(pretrained = ".\model\pretrained\FlowNet2-S_checkpoint.pth")
