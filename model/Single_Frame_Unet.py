@@ -78,6 +78,7 @@ class UNet(nn.Module):
         x = torch.cat(frames, dim=1) # --> (1,12,256,256)
         x = self.conv(x)
         skip1, skip2, skip3, skip4 = self.encoder(x)
+        print(skip1.shape, skip2.shape, skip3.shape, skip4.shape)
         x = self.decoder(skip1, skip2, skip3, skip4)
         return [x]
 
@@ -85,7 +86,8 @@ if __name__ == "__main__":
     model = UNet()
     num_params = sum(p.numel() for p in model.parameters())
     print("Number of parameters in the model:", num_params)
+    print(model)
     # summary(model, input_size = (12,256,256)) 
-    # inputs = [torch.randn((2, 3,256,256)) for _ in range(4)]
-    # x = model(inputs)
+    inputs = [torch.randn((2, 3,256,256)) for _ in range(4)]
+    x = model(inputs)
     # print(x[0].shape)
