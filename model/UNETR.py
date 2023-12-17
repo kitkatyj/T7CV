@@ -185,15 +185,11 @@ class Transformer(nn.Module):
     def forward(self, x):
         extract_layers = []
         hidden_states = self.embeddings(x)
-        # print("hidden_states", hidden_states)
+        
         for depth, layer_block in enumerate(self.layer):
             hidden_states, _ = layer_block(hidden_states)
-            # print("hidden_states", hidden_states)
             extract_layers.append(hidden_states)
-            # i changed this
-            # if depth + 1 in self.extract_layers:
-            #     extract_layers.append(hidden_states)
-
+           
         return extract_layers
 
 
@@ -207,9 +203,7 @@ class UNETR(nn.Module):
         self.patch_size = patch_size
         self.num_heads = num_heads
         self.dropout = dropout
-        # self.num_layers = 12
         self.num_layers = 4
-        # self.ext_layers = [3, 6, 9, 12]
         self.ext_layers = [3]
 
         self.patch_dim = [int(x / patch_size) for x in img_shape]
@@ -287,26 +281,25 @@ class UNETR(nn.Module):
         mean_ = x.mean(2, keepdim=True).mean(3, keepdim=True).mean(4,keepdim=True)
         x = x-mean_ 
         z = self.transformer(x)
-        # print("z",z)
+       
         z0, z3, z6, z9, z12 = x, *z
         z3 = z3.transpose(-1, -2).view(-1, self.embed_dim, *self.patch_dim)
         z6 = z6.transpose(-1, -2).view(-1, self.embed_dim, *self.patch_dim)
         z9 = z9.transpose(-1, -2).view(-1, self.embed_dim, *self.patch_dim)
         z12 = z12.transpose(-1, -2).view(-1, self.embed_dim, *self.patch_dim)
-
+       
         z12 = self.decoder12_upsampler(z12)
-        # print("z12",z12.shape)
         z9 = self.decoder9(z9)
-        # print("z9",z9.shape)
         z9 = self.decoder9_upsampler(torch.cat([z9, z12], dim=1))
-        # print("z9",z9.shape)
         z6 = self.decoder6(z6)
         z6 = self.decoder6_upsampler(torch.cat([z6, z9], dim=1))
         z3 = self.decoder3(z3)
         z3 = self.decoder3_upsampler(torch.cat([z3, z6], dim=1))
         z0 = self.decoder0(z0)
+
         z3 = z3.permute(0,1,4,2,3)
         z3 = F.interpolate(z3, size=(4,256,256))
+     
         output = torch.cat([z0, z3], dim=1)
         output = self.decoder0_header(torch.cat([z0, z3], dim=1))
         first_frame = output[:,:,0,:,:]
@@ -314,4 +307,5 @@ class UNETR(nn.Module):
         third_frame = output[:,:,2,:,:]
         fourth_frame = output[:,:,3,:,:]
         output = [first_frame + second_frame + third_frame + fourth_frame]
+      
         return output
