@@ -42,7 +42,13 @@ The FLAVR model with ConvLSTM showed the most significant improvement in PSNR, i
 
 For training your own model on the Vimeo-90K dataset, use the following command. You can download the original dataset from [this link](http://toflow.csail.mit.edu/).
 ``` bash
-python main.py --batch_size 32 --test_batch_size 32 --dataset vimeo90K_septuplet --loss 1*L1 --max_epoch 200 --lr 0.0002 --data_root <dataset_path> --n_outputs 1
+python main.py --batch_size 32 --test_batch_size 32 --dataset vimeo90K_septuplet --model <model_name> --loss 1*L1 --max_epoch 200 --lr 0.0002 --data_root <dataset_path> --n_outputs 1
+```
+You can run main.py with the following models and loss function
+```bash
+--model: ["singleframe", "mim", "opticalflow","flavr_inception", "flavr_lstm", "unetr"]
+--loss: weight*loss_types+...
+loss_types: ['MSE','Huber','L1','VGG22', 'VGG33', 'VGG44', 'VGG54','VGGP','SSIM', 'GAN']
 ```
 
 ## Pretrained Checkpoint Usage
@@ -54,7 +60,7 @@ You can download the checkpoints from our OneDrive repository:
 To use a checkpoint in your training, add the `--load_from` flag to your training command, followed by the path to the downloaded checkpoint file:
 
 ```bash
-python main.py --batch_size 32 --test_batch_size 32 --dataset vimeo90K_septuplet --loss 1*L1 --max_epoch 200 --lr 0.0002 --data_root <dataset_path> --n_outputs 1 --load_from <path_to_checkpoint>
+python main.py --batch_size 32 --test_batch_size 32 --dataset vimeo90K_septuplet --model <model_name> --loss 1*L1 --max_epoch 200 --lr 0.0002 --data_root <dataset_path> --n_outputs 1 --load_from <path_to_checkpoint>
 ```
 
 ## Testing using trained model
@@ -69,7 +75,7 @@ You can download the pretrained original FLAVR models from the following links.
 
 For testing a pretrained model on Vimeo-90K septuplet validation set, you can run the following command:
 ```bash
-python test.py --dataset vimeo90K_septuplet --data_root <data_path> --load_from <saved_model> --n_outputs 1
+python test.py --dataset vimeo90K_septuplet --model <model_name> --data_root <data_path> --load_from <saved_model> --n_outputs 1
 ```
 
 ## Testing using Custom Dataset
