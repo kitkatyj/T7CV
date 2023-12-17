@@ -38,18 +38,27 @@ elif args.dataset == "gopro":
 else:
     raise NotImplementedError
 
-# from model.FLAVR_arch_lstm import UNet_3D_3D
-# from model.FLAVR_arch import UNet_3D_3D
-# from model.FLAVR_arch_lstm_middle import UNet_3D_3D_lstm_middle
+from model.Single_Frame_Unet import UNet 
+from model.Masked_Image_Modelling import MIM_TCN
+from model.FLAVR_arch_w_inception import UNetWithInception
+from model.UNETR import UNETR
+from model.FLAVR_arch_lstm_middle import UNet_3D_3D_lstm_middle
+from model.FlowNetS_unet_noskipflow import FlowNetS_Interpolation
+
+model_classes = {"singleframe": UNet,
+                "mim": MIM_TCN,
+                "opticalflow": FlowNetS_Interpolation,
+                "flavr_inception": UNetWithInception,
+                "flavr_lstm": UNet_3D_3D_lstm_middle,
+                "unetr": UNETR
+}
+
 print("Building model: %s"%args.model.lower())
-# model = UNet_3D_3D(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType)
-# from model.UNETR import UNETR
-# model = UNETR()
-# model = UNet_3D_3D_lstm_middle(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType, upmode=args.upmode)
-# from model.FlowNetS_pre_LAE import FlowNetS_Interpolation
-# from model.Single_Frame_Unet import UNet
-from model.Masked_Image_Modelling import MIM_LSTM, MIM_transformer, MIM_TCN
-model = MIM_TCN()
+if 'flavr' in args.model.lower():
+    model = model_classes[args.model.lower()](args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType, upmode=args.upmode)
+else:
+    model = model_classes[args.model.lower()]()
+print(model)
 
 model = torch.nn.DataParallel(model).to(device)
 print("#params" , sum([p.numel() for p in model.parameters()]))

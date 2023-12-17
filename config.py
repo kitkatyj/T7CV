@@ -14,7 +14,7 @@ data_arg.add_argument('--dataset', type=str, default='vimeo90k')
 data_arg.add_argument('--data_root', type=str)
 
 # Model
-model_choices = ["unet_18", "unet_34"]
+model_choices = ["singleframe", "mim", "opticalflow", "flavr_inception", "flavr_lstm", "unetr"]
 model_arg = add_argument_group('Model')
 model_arg.add_argument('--model', choices=model_choices, type=str, default="unet_18")
 model_arg.add_argument('--nbr_frame' , type=int , default=4)
