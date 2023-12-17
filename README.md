@@ -72,6 +72,22 @@ For testing a pretrained model on Vimeo-90K septuplet validation set, you can ru
 python test.py --dataset vimeo90K_septuplet --data_root <data_path> --load_from <saved_model> --n_outputs 1
 ```
 
+## Testing using Custom Dataset
+
+### Download the Dataset
+Our custom dataset for testing, can be downloaded from our OneDrive repository:
+[Download Custom Occlusion Dataset](https://sutdapac-my.sharepoint.com/personal/joshua_limhongjun_mymail_sutd_edu_sg/_layouts/15/onedrive.aspx?ga=1&id=%2Fpersonal%2Fjoshua%5Flimhongjun%5Fmymail%5Fsutd%5Fedu%5Fsg%2FDocuments%2FT7%5FCV%5FCheckpoints%2FCustom%20Occlusion%20Dataset)
+
+### Steps for Running Test on Custom Dataset
+1. Place the `sep_testlist_occ` file in the `vimeo_septuplet/` directory.
+2. Unzip `occlusion.zip` and move the `occlusion` folder into `vimeo_septuplet/sequences`.
+3. Modify the dataset script `vimeo90k_septuplet.py` located in `T7CV/dataset/` by changing the following:
+    - On line 24, replace the path with `test_fn = os.path.join(self.data_root, 'sep_testlist_occ.txt')`.
+    - Ensure `sep_testlist_occ.txt` is used instead of the original `sep_testlist.txt`.
+
+After these setup steps, execute the `test_gen_images.py` script to run inference on the occlusion samples.
+
+
 
 ## Conclusion
 Our extensive evaluations suggest that integrating ConvLSTM into the FLAVR architecture enhances interpolation quality. Moreover, the simplicity and efficiency of the Single Frame model present it as a viable alternative for less computationally intense applications.
