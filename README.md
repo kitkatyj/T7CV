@@ -28,8 +28,40 @@ We experimented with six model architectures, including variations of FLAVR, UNE
 
 The FLAVR model with ConvLSTM showed the most significant improvement in PSNR, indicating its strong capacity to interpolate frames accurately.
 
-# Usage
-https://sutdapac-my.sharepoint.com/personal/joshua_limhongjun_mymail_sutd_edu_sg/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fjoshua%5Flimhongjun%5Fmymail%5Fsutd%5Fedu%5Fsg%2FDocuments%2FT7%5FCV%5FCheckpoints&ga=1
+## Training model on Vimeo-90K septuplets
+
+For training your own model on the Vimeo-90K dataset, use the following command. You can download the dataset from [this link](http://toflow.csail.mit.edu/).
+``` bash
+python main.py --batch_size 32 --test_batch_size 32 --dataset vimeo90K_septuplet --loss 1*L1 --max_epoch 200 --lr 0.0002 --data_root <dataset_path> --n_outputs 1
+```
+
+## Pretrained Checkpoint Usage
+
+To further enhance the training process, you can utilize the checkpoints from our best-performing models. 
+You can download the checkpoints from our OneDrive repository:
+[Download Checkpoints](https://sutdapac-my.sharepoint.com/personal/joshua_limhongjun_mymail_sutd_edu_sg/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fjoshua%5Flimhongjun%5Fmymail%5Fsutd%5Fedu%5Fsg%2FDocuments%2FT7%5FCV%5FCheckpoints&ga=1)
+
+To use a checkpoint in your training, add the `--load_from` flag to your training command, followed by the path to the downloaded checkpoint file:
+
+```bash
+python main.py --batch_size 32 --test_batch_size 32 --dataset vimeo90K_septuplet --loss 1*L1 --max_epoch 200 --lr 0.0002 --data_root <dataset_path> --n_outputs 1 --load_from <path_to_checkpoint>
+```
+
+## Testing using trained model.
+
+### Trained Models.
+You can download the pretrained FLAVR models from the following links.
+ Method        | Trained Model  |
+| ------------- |:-----|
+| **2x** | [Link](https://drive.google.com/drive/folders/1M6ec7t59exOSlx_Wp6K9_njBlLH2IPBC?usp=sharing) |
+| **4x** |   [Link](https://drive.google.com/file/d/1btmNm4LkHVO9gjAaKKN9CXf5vP7h4hCy/view?usp=sharing)   |
+| **8x** |   [Link](https://drive.google.com/drive/folders/1Gd2l69j7UC1Zua7StbUNcomAAhmE-xFb?usp=sharing)  |
+
+For testing a pretrained model on Vimeo-90K septuplet validation set, you can run the following command:
+```bash
+python test.py --dataset vimeo90K_septuplet --data_root <data_path> --load_from <saved_model> --n_outputs 1
+```
+
 
 ## Conclusion
 Our extensive evaluations suggest that integrating ConvLSTM into the FLAVR architecture enhances interpolation quality. Moreover, the simplicity and efficiency of the Single Frame model present it as a viable alternative for less computationally intense applications.
