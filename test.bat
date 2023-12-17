@@ -1,0 +1,2 @@
+call ".\env\scripts\activate"
+py Middleburry_Test.py --data_root "D:\SUTD\Term 7\CV\FLAVR\eval-color-allframes\eval-data" --load_from "D:\SUTD\Term 7\CV\FLAVR\saved_models_final\vimeo90K_septuplet\exp\model_best.pth" --n_outputs 1
