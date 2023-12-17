@@ -16,7 +16,7 @@ import myutils
 from torch.utils.data import DataLoader
 
 ##### Parse CmdLine Arguments #####
-os.environ["CUDA_VISIBLE_DEVICES"]='7'
+os.environ["CUDA_VISIBLE_DEVICES"]='0'
 args, unparsed = config.get_args()
 cwd = os.getcwd()
 
@@ -40,9 +40,10 @@ else:
 
 
 from model.FLAVR_arch import UNet_3D_3D
+from model.Masked_Image_Modelling import MIM_transformer
 print("Building model: %s"%args.model.lower())
-model = UNet_3D_3D(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType)
-
+# model = UNet_3D_3D(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType)
+model = MIM_transformer()
 model = torch.nn.DataParallel(model).to(device)
 print("#params" , sum([p.numel() for p in model.parameters()]))
 
@@ -90,3 +91,5 @@ def main(args):
 
 if __name__ == "__main__":
     main(args)
+
+# python test.py --dataset vimeo90K_septuplet --data_root <data_path> --load_from <saved_model> --n_outputs 1
