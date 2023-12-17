@@ -1,7 +1,17 @@
 # FLAVR-Based Video Frame Interpolation Methods
 
 ## Overview
-This repository contains research and implementation for video frame interpolation using the [FLAVR (Flow-Agnostic Video Representations)](https://tarun005.github.io/FLAVR/) network. Our project extends the capabilities of FLAVR by experimenting with several architectural enhancements and evaluating their performance in generating interpolated video frames.
+This repository contains research and implementation for video frame interpolation using the [FLAVR (Flow-Agnostic Video Representations)](https://tarun005.github.io/FLAVR/) network. Our project extends the capabilities of FLAVR by experimenting with several architectural enhancements and evaluating their performance in generating interpolated video frames. This is a SUTD university project for the module "50.035 Computer Vision".
+
+## Team
+
+| Name                | Student ID |
+|---------------------|------------|
+| Lee Pei Xuan        | 1005513    |
+| Pala Tej Deep       | 1005282    |
+| Lim Hong Jun, Joshua| 1005259    |
+| Baarath S/O Sellathurai | 1005433    |
+| Kat Yong Jie        | 1005167    |
 
 ## Introduction
 Video frame interpolation is crucial for applications such as slow-motion video generation, frame rate conversion, and more. We've built upon the FLAVR architecture to explore its adaptability and efficacy under various conditions including occlusions and dynamic lighting.
