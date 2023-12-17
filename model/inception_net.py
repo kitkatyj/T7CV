@@ -53,6 +53,7 @@ class Inception3d(nn.Module):
         branch_pool = F.max_pool3d(x, kernel_size=3, stride=1, padding=1)
         branch_pool = self.branch_pool(branch_pool)
         outputs = [branch1x1, branch3x3, branch5x5, branch_pool]
+        # print(branch1x1.shape,branch3x3.shape,branch5x5.shape,branch_pool.shape)
         return torch.cat(outputs, 1)
 
 

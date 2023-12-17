@@ -1,3 +1,4 @@
+
 import os
 import sys
 import time
@@ -16,11 +17,11 @@ import myutils
 from torch.utils.data import DataLoader
 
 ##### Parse CmdLine Arguments #####
-os.environ["CUDA_VISIBLE_DEVICES"]='0'
 args, unparsed = config.get_args()
 cwd = os.getcwd()
 
 device = torch.device('cuda' if args.cuda else 'cpu')
+print("device", device)
 
 torch.manual_seed(args.random_seed)
 if args.cuda:
@@ -38,15 +39,30 @@ elif args.dataset == "gopro":
 else:
     raise NotImplementedError
 
-
-from model.FLAVR_arch_w_inception_net import UNet_3D_3D
+# from model.FLAVR_arch_lstm import UNet_3D_3D
 # from model.FLAVR_arch import UNet_3D_3D
+# from model.FLAVR_arch_lstm_middle import UNet_3D_3D_lstm_middle
 print("Building model: %s"%args.model.lower())
-model = UNet_3D_3D(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType)
+# model = UNet_3D_3D(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType)
+# from model.UNETR import UNETR
+# model = UNETR()
+# model = UNet_3D_3D_lstm_middle(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType, upmode=args.upmode)
+# from model.FlowNetS_pre_LAE import FlowNetS_Interpolation
+# from model.Single_Frame_Unet import UNet
+# from model.FLAVR_arch_v2_w_inception import UNetWithInception  # Import UNetWithInception
+# from model.FLAVR_arch_w_inception import UNetWithInception  # Import UNetWithInception
+from model.FLAVR_arch_w_inception_net import UNet_3D_3D
 
+model = UNet_3D_3D(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType, upmode=args.upmode)
 model = torch.nn.DataParallel(model).to(device)
 print("#params" , sum([p.numel() for p in model.parameters()]))
 
+# i added
+def make_image(img):
+    # img = F.interpolate(img.unsqueeze(0) , (720,1280) , mode="bilinear").squeeze(0)
+    q_im = img.data.mul(255.).clamp(0,255).round()
+    im = q_im.permute(1, 2, 0).cpu().numpy().astype(np.uint8)
+    return im
 
 def test(args):
     time_taken = []
@@ -54,8 +70,10 @@ def test(args):
     model.eval()
 
     psnr_list = []
+    
     with torch.no_grad():
-        for i, (images, gt_image ) in enumerate(tqdm(test_loader)):
+
+        for i, (images, gt_image ) in enumerate(tqdm(test_loader)): 
 
             images = [img_.cuda() for img_ in images]
             gt = [g_.cuda() for g_ in gt_image]
@@ -71,6 +89,17 @@ def test(args):
             time_taken.append(time.time() - start_time)
 
             myutils.eval_metrics(out, gt, psnrs, ssims)
+
+            # i added
+            output_image = make_image(out.squeeze(0))
+            gt_image = make_image(gt.squeeze(0))
+            import imageio
+            os.makedirs(f"./sample_results/{args.exp_name}/image/{i}")
+            imageio.imwrite(f"./sample_results/{args.exp_name}/image/{i}/frame{i}.png", output_image)
+            imageio.imwrite(f"./sample_results/{args.exp_name}/image/{i}/gtframe{i}.png", gt_image) 
+
+            if i > 250:
+                break
 
     print("PSNR: %f, SSIM: %fn" %
           (psnrs.avg, ssims.avg))

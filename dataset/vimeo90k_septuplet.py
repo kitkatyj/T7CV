@@ -21,7 +21,7 @@ class VimeoSepTuplet(Dataset):
         self.inputs = input_frames
 
         train_fn = os.path.join(self.data_root, 'sep_trainlist.txt')
-        test_fn = os.path.join(self.data_root, 'sep_testlist.txt')
+        test_fn = os.path.join(self.data_root, 'sep_testlist_occ.txt')
         with open(train_fn, 'r') as f:
             self.trainlist = f.read().splitlines()
         with open(test_fn, 'r') as f:
@@ -37,6 +37,7 @@ class VimeoSepTuplet(Dataset):
             ])
         else:
             self.transforms = transforms.Compose([
+                transforms.CenterCrop(256),
                 transforms.ToTensor()
             ])
 
