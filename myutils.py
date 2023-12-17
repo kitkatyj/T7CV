@@ -54,7 +54,7 @@ def calc_psnr(pred, gt):
     return -10 * math.log10(diff)
 
 
-def save_checkpoint(state, directory, is_best, exp_name, filename='latest_checkpoint.pth'):
+def save_checkpoint(state, directory, is_best, exp_name, filename='checkpoint.pth'):
     """Saves checkpoint to disk"""
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -62,6 +62,16 @@ def save_checkpoint(state, directory, is_best, exp_name, filename='latest_checkp
     torch.save(state, filename)
     if is_best:
         shutil.copyfile(filename, os.path.join(directory , 'model_best.pth'))
+
+def save_checkpoint_modified(state, directory, filename):
+    """Saves checkpoint to disk"""
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    filename = filename + 'checkpoint.pth'
+    filename = os.path.join(directory , filename)
+    torch.save(state, filename)
+    # if is_best:
+    #     shutil.copyfile(filename, os.path.join(directory , 'model_best.pth'))
 
 def log_tensorboard(writer, loss, psnr, ssim, lpips, lr, timestep, mode='train'):
     writer.add_scalar('Loss/%s/%s' % mode, loss, timestep)

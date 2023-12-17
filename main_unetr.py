@@ -1,7 +1,6 @@
 import os
 import sys
 import time
-from datetime import datetime
 
 import torch
 import numpy as np
@@ -13,17 +12,20 @@ import myutils
 from loss import Loss
 from torch.utils.data import DataLoader
 
-def load_checkpoint(args, model, optimizer, path):
+try:
+    from torch.hub import load_state_dict_from_url
+except ImportError:
+    from torch.utils.model_zoo import load_url as load_state_dict_from_url
+
+def load_checkpoint(args, model, optimizer , path):
     print("loading checkpoint %s" % path)
     checkpoint = torch.load(path)
     args.start_epoch = checkpoint['epoch'] + 1
     model.load_state_dict(checkpoint['state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer'])
     lr = checkpoint.get("lr" , args.lr)
-    best_psnr = checkpoint['best_psnr']
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
-    return best_psnr
 
 
 ##### Parse CmdLine Arguments #####
@@ -63,17 +65,16 @@ else:
     raise NotImplementedError
 
 
-from model.FLAVR_arch_w_inception import UNetWithInception  # Import UNetWithInception
-# from model.FLAVR_arch_v2_w_inception import UNetWithInception  # Import UNetWithInception
-# from model.FLAVR_arch_w_inception_net import UNet_3D_3D
-# from model.FLAVR_arch_w_inception_conv_one import UNetWithInception  # Import UNetWithInception
-# from model.FLAVR_arch_v2 import UNet_3D_3D
-# from model.UNETR import UNETR
+# from model.FLAVR_arch import UNet_3D_3D
+# from model.FLAVR_lstm_startEnd import UNet_3D_3D_lstm_startEnd
+# from model.FLAVR_arch_lstm_middle import UNet_3D_3D_lstm_middle
+from model.UNETR import UNETR
 
 print("Building model: %s"%args.model.lower())
-# model = UNETR()
-model = UNetWithInception(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType, upmode=args.upmode)
-print(model)
+# model = UNet_3D_3D(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType, upmode=args.upmode)
+model = UNETR()
+# model = UNet_3D_3D_lstm_startEnd(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType, upmode=args.upmode)
+# model = UNet_3D_3D_lstm_middle(args.model.lower() , n_inputs=args.nbr_frame, n_outputs=args.n_outputs, joinType=args.joinType, upmode=args.upmode)
 model = torch.nn.DataParallel(model).to(device)
 
 ##### Define Loss & Optimizer #####
@@ -83,9 +84,6 @@ criterion = Loss(args)
 from torch.optim import Adam
 optimizer = Adam(model.parameters(), lr=args.lr, betas=(args.beta1, args.beta2))
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5, verbose=True)
-
-# best_psnr = 0
-# best_psnr = load_checkpoint(args, model, optimizer, "./ckpts/saved_models_final/vimeo90K_septuplet/MIM_LSTM/latest_checkpoint.pth")
 
 def train(args, epoch):
     losses, psnrs, ssims = myutils.init_meters(args.loss)
@@ -135,7 +133,7 @@ def train(args, epoch):
                     'optimizer': optimizer.state_dict(),
                     'best_psnr': psnrs.avg,
                     'lr' : optimizer.param_groups[-1]['lr']
-                }, save_loc, "UNETR_" + str(psnrs.avg) + "--" + str(len(train_loader)) + "_" + str(datetime.now().strftime('%d-%m-%Y-%H-%M')))
+                }, save_loc, "UNETR_" + str(psnrs.avg) + "--" + str(len(train_loader)))
 
             
             # Log to TensorBoard

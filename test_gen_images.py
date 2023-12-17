@@ -51,6 +51,7 @@ print("Building model: %s"%args.model.lower())
 # from model.Single_Frame_Unet import UNet
 from model.Masked_Image_Modelling import MIM_LSTM, MIM_transformer, MIM_TCN
 model = MIM_TCN()
+
 model = torch.nn.DataParallel(model).to(device)
 print("#params" , sum([p.numel() for p in model.parameters()]))
 
@@ -91,9 +92,9 @@ def test(args):
             output_image = make_image(out.squeeze(0))
             gt_image = make_image(gt.squeeze(0))
             import imageio
-            os.makedirs(f"./ckpts/sample_results/{args.exp_name}/image/{i}")
-            imageio.imwrite(f"./ckpts/sample_results/{args.exp_name}/image/{i}/frame{i}.png", output_image)
-            imageio.imwrite(f"./ckpts/sample_results/{args.exp_name}/image/{i}/gtframe{i}.png", gt_image) 
+            os.makedirs(f"./sample_results/{args.exp_name}/image/{i}")
+            imageio.imwrite(f"./sample_results/{args.exp_name}/image/{i}/frame{i}.png", output_image)
+            imageio.imwrite(f"./sample_results/{args.exp_name}/image/{i}/gtframe{i}.png", gt_image) 
 
             if i > 250:
                 break

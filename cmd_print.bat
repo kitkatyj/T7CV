@@ -1,0 +1,2 @@
+call ".\env\scripts\activate"
+py print_model.py --batch_size 8 --test_batch_size 8 --dataset vimeo90K_septuplet --loss 1*L1 --max_epoch 200 --lr 0.0002 --data_root "D:\SUTD\Term 7\CV\T7CV\vimeo_septuplet" --n_outputs 1 --exp_name "trial"

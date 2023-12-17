@@ -48,8 +48,12 @@ class InceptionModule(nn.Module):
 
     def forward(self, x):
         branch1x1 = self.branch1x1(x)
+        print(branch1x1.shape, 'br1')
         branch3x3 = self.branch3x3(x)
+        print(branch3x3.shape, 'branch3x3')
         branch5x5 = self.branch5x5(x)
+        print(branch5x5.shape, 'branch5x5')
         branch_pool = self.branch_pool(x)
+        print(branch_pool.shape, 'branch_pool')
         outputs = [branch1x1, branch3x3, branch5x5, branch_pool]
         return torch.cat(outputs, 1)
