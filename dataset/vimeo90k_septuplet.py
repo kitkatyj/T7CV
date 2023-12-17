@@ -21,7 +21,8 @@ class VimeoSepTuplet(Dataset):
         self.inputs = input_frames
 
         train_fn = os.path.join(self.data_root, 'sep_trainlist.txt')
-        test_fn = os.path.join(self.data_root, 'sep_testlist_occ.txt')
+        # test_fn = os.path.join(self.data_root, 'sep_testlist_occ.txt')
+        test_fn = os.path.join(self.data_root, 'sep_testlist.txt')
         with open(train_fn, 'r') as f:
             self.trainlist = f.read().splitlines()
         with open(test_fn, 'r') as f:
